@@ -7,6 +7,14 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "modules
 import hy
 entry = os.path.abspath(os.path.join(os.path.dirname(__file__), len(sys.argv) == 4 and sys.argv[-1] or "entry.hy"))
 
+def run_hylang_file():
+    print("Reloading " + entry)
+    try:
+        hy.importer.import_file_to_module("__main__", entry)
+    except:
+        traceback.print_exc()
+    print(entry + " Done")
+
 class ModalTimerOperator(bpy.types.Operator):
     """Operator which runs its self from a timer"""
     bl_idname = "wm.modal_timer_operator"
@@ -14,14 +22,6 @@ class ModalTimerOperator(bpy.types.Operator):
     last_check = 0
     
     _timer = None
-
-    def run_entry(self):
-        print("Reloading " + entry)
-        try:
-            hy.importer.import_file_to_module("__main__", entry)
-        except:
-            traceback.print_exc()
-        print(entry + " Done")
     
     def modal(self, context, event):
         #if event.type in {'RIGHTMOUSE', 'ESC'}:
@@ -32,7 +32,7 @@ class ModalTimerOperator(bpy.types.Operator):
                 statbuf = os.stat(entry)
                 if statbuf.st_mtime > self.last_check:
                     self.last_check = statbuf.st_mtime
-                    self.run_entry()
+                    run_hylang_file()
 
         return {'PASS_THROUGH'}
 
@@ -49,11 +49,16 @@ class ModalTimerOperator(bpy.types.Operator):
         print("Finished watching " + entry)
         return {'CANCELLED'}
 
+def frame_change_handler(scene):
+    run_hylang_file()
+
 def register():
     bpy.utils.register_class(ModalTimerOperator)
+    bpy.app.handlers.frame_change_post.append(frame_change_handler)
 
 def unregister():
     bpy.utils.unregister_class(ModalTimerOperator)
+    bpy.app.handlers.frame_change_post.remove(frame_change_handler)
 
 if __name__ == "__main__":
     register()
