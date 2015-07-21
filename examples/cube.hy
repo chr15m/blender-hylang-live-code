@@ -1,5 +1,7 @@
 (import bpy)
-(import helpers)
+(import [helpers :as h])
 
-(helpers.clear)
-(bpy.ops.mesh.primitive_cube_add)
+; clear the screen
+(h.clear)
+; create a cube at 0 0 0
+(h.mk-ob h.cube [0 0 0])
