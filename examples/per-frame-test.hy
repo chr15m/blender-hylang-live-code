@@ -1,7 +1,9 @@
 (import bpy)
-(import helpers)
-
-(helpers.clear)
+(import [helpers :as h])
 (import math)
 
-(apply bpy.ops.mesh.primitive_cube_add [] {"location" [0 0 (* (math.sin (/ bpy.context.scene.frame_current 10.0)) 5)]})
+; clear the screen
+(h.clear)
+
+; make a cube at a position dependent on the frame modulus sine
+(h.mk-ob h.cube [0 0 (* (math.sin (/ (h.f) 10.0)) 5)])
