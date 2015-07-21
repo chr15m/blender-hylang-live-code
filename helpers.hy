@@ -1,15 +1,21 @@
 (import bpy)
 
-(defn clear []
-  ; delete all meshes and start again
-  (try (apply bpy.ops.object.mode_set [] {"mode" "OBJECT"}) (catch [e Exception]))
-  (apply bpy.ops.object.select_by_type [] {"type" "MESH"})
-  (apply bpy.ops.object.delete [] {"use_global" false})
-    (for [m bpy.data.meshes]
-      (bpy.data.meshes.remove m)))
-
 ; prefix all created objects with this so we can ignore everything else in the scene
 (def prefix "HyLife")
+
+; function to clear all of the objects created by this rig (good to call at the start of script)
+(defn clear []
+  ; get in object mode
+  (try (apply bpy.ops.object.mode_set [] {"mode" "OBJECT"}) (catch [e Exception]))
+  ; deselect everything first
+  (apply bpy.ops.object.select_all [] {"action" "DESELECT"})
+  ; loop through all objects
+  (for [o bpy.context.scene.objects]
+    ; if it has our prefix then delete it
+    (if (o.name.startswith prefix)
+      (setv o.select true)))
+  ; go ahead and execute the delete on the selected objects
+  (apply bpy.ops.object.delete [] {"use_global" false}))
 
 ; *** aliases ***
 
@@ -31,7 +37,7 @@
   (let [[ob bpy.context.object]]
     ; mutate :(
     (setv ob.name prefix)
-    (setv ob.show_name true)
+    (setv ob.show_name false)
     (setv ob.data.name (+ prefix "Mesh"))))
 
 (defn tfrm [base-call arg]
