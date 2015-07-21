@@ -29,31 +29,62 @@
 ; *** aliases - transforms ***
 
 (def scale bpy.ops.transform.resize)
+(def resize bpy.ops.transform.resize)
+(def rotate bpy.ops.transform.rotate)
+(def translate bpy.ops.transform.translate)
 
 ; object parameter aliases
 
 (def parameter-aliases {
   :loc 'location
-  :l 'location})
+  :l 'location
+  :s 'scale
+  :r 'rotate
+  :rot 'rotate
+  :t 'translate
+  :trans 'translate})
 
-(defn replace-aliases [k]
+(defn replace-alias [k]
   ; convert :keyword params into regular python strings
   (name 
     ; if we have an alias for a particular key then use it
     (parameter-aliases.get k k)))
 
+; run through parameters replacing all with aliases
+(defn replace-aliases [params]
+  (dict (list-comp [(replace-alias k) (get params k)] [k params])))
+
+; filter the parameters list into ones that can go into blender calls versus ones we apply manually
+(defn filter-internal-param [param]
+  (in param ["scale" "rotate"]))
+
 ; *** do ***
 
-(defn mk-ob [base-call params]
-  (apply base-call [] (dict (list-comp [(replace-aliases k) (get params k)] [k params])))
-  (let [[ob bpy.context.object]]
-    ; mutate :(
-    (setv ob.name prefix)
-    (setv ob.show_name false)
-    (setv ob.data.name (+ prefix "Mesh"))))
+(defn mk-ob [base-call &optional [params {}]]
+  (let [[params-unaliased (replace-aliases params)]
+        [params-for-call (dict-comp p (params-unaliased.get p) [p params-unaliased] (not (filter-internal-param p)))]
+        [params-for-us (dict-comp p (params-unaliased.get p) [p params-unaliased] (filter-internal-param p))]]
+    (apply base-call [] params-for-call)
+    (let [[ob bpy.context.object]]
+      ; mutate :(
+      ; set the name to our prefix so we can recognise out own objects later
+      (setv ob.name prefix)
+      (setv ob.show_name false)
+      (setv ob.data.name (+ prefix "Mesh"))
+      ; scale the object if requested
+      (if (in "scale" params-for-us)
+        (apply scale [] {"value" (params-for-us.get "scale")}))
+      (if (in "rotate" params-for-us)
+        (apply rotate [] {"value" (first (params-for-us.get "rotate")) "axis" (slice (params-for-us.get "rotate") 1)}))
+      (if (in "translate" params-for-us)
+        (apply translate [] {"value" (params-for-us.get "translate")}))
+      ob)))
 
-(defn tfrm [base-call arg]
-  (apply base-call [] {"value" arg}))
+(defn tfrm [base-call arg &optional args]
+  (let [[v {"value" arg}]]
+    (apply base-call [] (if args (merge-with identity v (replace-aliases args)) v))))
+
+(def tf tfrm)
 
 (defn yo []
    (print "Yo!"))
