@@ -5,7 +5,7 @@ import traceback
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "modules")))
 import hy
-entry = os.path.abspath(os.path.join(os.path.dirname(__file__), len(sys.argv) == 4 and sys.argv[-1] or "entry.hy"))
+entry = os.path.abspath(os.path.join(os.path.dirname(__file__), os.environ.get("HY_ENTRY_FILE", "entry.hy")))
 
 def run_hylang_file():
     print("Reloading " + entry)
