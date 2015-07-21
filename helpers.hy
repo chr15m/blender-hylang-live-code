@@ -30,10 +30,22 @@
 
 (def scale bpy.ops.transform.resize)
 
+; object parameter aliases
+
+(def parameter-aliases {
+  :loc 'location
+  :l 'location})
+
+(defn replace-aliases [k]
+  ; convert :keyword params into regular python strings
+  (name 
+    ; if we have an alias for a particular key then use it
+    (parameter-aliases.get k k)))
+
 ; *** do ***
 
-(defn mk-ob [base-call location]
-  (apply base-call [] {"location" location})
+(defn mk-ob [base-call params]
+  (apply base-call [] (dict (list-comp [(replace-aliases k) (get params k)] [k params])))
   (let [[ob bpy.context.object]]
     ; mutate :(
     (setv ob.name prefix)
