@@ -4,7 +4,7 @@
 
 (clear)
 
-(mk-ob cube {:l  [0 0 (* (math.sin (/ (f) 10.0)) 2)]})
+(mk-ob cube {:l [0 0 (* (math.sin (/ (f) 10.0)) 2)]})
 (tfrm scale [0.5 0.5 0.5])
 
 (mk-ob cube {:l [0 0 (* (math.sin (+ (/ (f) 10.0) 3)) 2)]})
