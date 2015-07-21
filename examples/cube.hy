@@ -3,5 +3,5 @@
 
 ; clear the screen
 (h.clear)
-; create a cube at 0 0 0
-(h.mk-ob h.cube [0 0 0])
+; create a cube at location 0 0 0
+(h.mk-ob h.cube {:loc [0 0 0]})

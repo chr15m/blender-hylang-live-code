@@ -6,4 +6,4 @@
 (h.clear)
 
 ; make a cube at a position dependent on the frame modulus sine
-(h.mk-ob h.cube [0 0 (* (math.sin (/ (h.f) 10.0)) 5)])
+(h.mk-ob h.cube {:loc [0 0 (* (math.sin (/ (h.f) 10.0)) 5)]})
